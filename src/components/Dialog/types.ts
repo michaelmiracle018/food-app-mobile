@@ -7,12 +7,15 @@ import type {
 import {ViewStyle} from 'react-native'
 import {StyleProp} from 'react-native'
 
-import {ViewStyleProp} from '#/alf'
 import {BottomSheetViewProps} from '../../../modules/bottom-sheet'
 import {BottomSheetSnapPoint} from '../../../modules/bottom-sheet/src/BottomSheet.types'
 
 type A11yProps = Required<AccessibilityProps>
 
+export type ViewStyleProp = {
+  style?: StyleProp<ViewStyle>
+  classname?: string | undefined
+}
 /**
  * Mutated by useImperativeHandle to provide a public API for controlling the
  * dialog. The methods here will actually become the handlers defined within
@@ -44,8 +47,6 @@ export type DialogContextProps = {
   nativeSnapPoint: BottomSheetSnapPoint
   disableDrag: boolean
   setDisableDrag: React.Dispatch<React.SetStateAction<boolean>>
-  // in the event that the hook is used outside of a dialog
-  isWithinDialog: boolean
 }
 
 export type DialogControlOpenOptions = {
@@ -62,16 +63,11 @@ export type DialogOuterProps = {
   control: DialogControlProps
   onClose?: () => void
   nativeOptions?: Omit<BottomSheetViewProps, 'children'>
-  webOptions?: {
-    alignCenter?: boolean
-  }
+  webOptions?: {}
   testID?: string
 }
 
-type DialogInnerPropsBase<T> = React.PropsWithChildren<ViewStyleProp> &
-  T & {
-    testID?: string
-  }
+type DialogInnerPropsBase<T> = React.PropsWithChildren<ViewStyleProp> & T
 export type DialogInnerProps =
   | DialogInnerPropsBase<{
       label?: undefined
@@ -80,6 +76,7 @@ export type DialogInnerProps =
       keyboardDismissMode?: ScrollViewProps['keyboardDismissMode']
       contentContainerStyle?: StyleProp<ViewStyle>
       header?: React.ReactNode
+      
     }>
   | DialogInnerPropsBase<{
       label: string

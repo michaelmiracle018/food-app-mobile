@@ -11,13 +11,14 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {requireNativeModule, requireNativeViewManager} from 'expo-modules-core'
 
-import {isIOS} from '#/platform/detection'
+// import {isIOS} from '#/platform/detection'
 import {
   type BottomSheetState,
   type BottomSheetViewProps,
 } from './BottomSheet.types'
 import {BottomSheetPortalProvider} from './BottomSheetPortal'
 import {Context as PortalContext} from './BottomSheetPortal'
+import { isIOS } from '#/lib/platform/detection'
 
 const screenHeight = Dimensions.get('screen').height
 

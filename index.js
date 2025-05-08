@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler' // must be first
-import '#/platform/polyfills'
+// import '#/platform/polyfills'
 
 import {LogBox} from 'react-native'
 import {registerRootComponent} from 'expo'

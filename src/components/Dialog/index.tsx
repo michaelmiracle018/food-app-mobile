@@ -1,53 +1,47 @@
 import React, {useImperativeHandle} from 'react'
 import {
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Pressable,
-  type ScrollView,
-  type StyleProp,
-  TextInput,
+  ScrollView,
   View,
-  type ViewStyle,
 } from 'react-native'
 import {
   KeyboardAwareScrollView,
   useKeyboardHandler,
 } from 'react-native-keyboard-controller'
 import {runOnJS} from 'react-native-reanimated'
-import {type ReanimatedScrollEvent} from 'react-native-reanimated/lib/typescript/hook/commonTypes'
+// import {ReanimatedScrollEvent} from 'react-native-reanimated/lib/typescript/hook/commonTypes'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 
-import {useEnableKeyboardController} from '#/lib/hooks/useEnableKeyboardController'
-import {ScrollProvider} from '#/lib/ScrollContext'
-import {logger} from '#/logger'
-import {isAndroid, isIOS} from '#/platform/detection'
-import {useA11y} from '#/state/a11y'
-import {useDialogStateControlContext} from '#/state/dialogs'
-import {List, type ListMethods, type ListProps} from '#/view/com/util/List'
-import {atoms as a, tokens, useTheme} from '#/alf'
-import {useThemeName} from '#/alf/util/useColorModeTheme'
-import {Context, useDialogContext} from '#/components/Dialog/context'
+import {useEnableKeyboardController} from '~/hooks/useEnableKeyboardController'
+// import {ScrollProvider} from '~/lib/ScrollContext'
+import {isAndroid, isIOS} from '~/lib/platform/detection'
+import {useDialogStateControlContext} from '~/state/dialogs'
+// import {List, ListMethods, ListProps} from '#/view/com/util/List'
+import {Context, useDialogContext} from '~/components/Dialog/context'
 import {
-  type DialogControlProps,
-  type DialogInnerProps,
-  type DialogOuterProps,
-} from '#/components/Dialog/types'
-import {createInput} from '#/components/forms/TextField'
+  DialogControlProps,
+  DialogInnerProps,
+  DialogOuterProps,
+} from '~/components/Dialog/types'
+// import {createInput} from '#/components/forms/TextField'
 import {BottomSheet, BottomSheetSnapPoint} from '../../../modules/bottom-sheet'
 import {
-  type BottomSheetSnapPointChangeEvent,
-  type BottomSheetStateChangeEvent,
+  BottomSheetSnapPointChangeEvent,
+  BottomSheetStateChangeEvent,
 } from '../../../modules/bottom-sheet/src/BottomSheet.types'
-import {type BottomSheetNativeComponent} from '../../../modules/bottom-sheet/src/BottomSheetNativeComponent'
+import {BottomSheetNativeComponent} from '../../../modules/bottom-sheet/src/BottomSheetNativeComponent'
+import { cn } from '~/lib/utils'
 
-export {useDialogContext, useDialogControl} from '#/components/Dialog/context'
-export * from '#/components/Dialog/shared'
-export * from '#/components/Dialog/types'
-export * from '#/components/Dialog/utils'
-
-export const Input = createInput(TextInput)
+export {useDialogContext, useDialogControl} from '~/components/Dialog/context'
+// export * from '~/components/Dialog/shared'
+export * from '~/components/Dialog/types'
+export * from '~/components/Dialog/utils'
+// @ts-ignore
+// export const Input = createInput(TextInput)
 
 export function Outer({
   children,
@@ -56,8 +50,6 @@ export function Outer({
   nativeOptions,
   testID,
 }: React.PropsWithChildren<DialogOuterProps>) {
-  const themeName = useThemeName()
-  const t = useTheme(themeName)
   const ref = React.useRef<BottomSheetNativeComponent>(null)
   const closeCallbacks = React.useRef<(() => void)[]>([])
   const {setDialogIsOpen, setFullyExpandedCount} =
@@ -73,14 +65,6 @@ export function Outer({
   )
 
   const callQueuedCallbacks = React.useCallback(() => {
-    for (const cb of closeCallbacks.current) {
-      try {
-        cb()
-      } catch (e: any) {
-        logger.error(e || 'Error running close callback')
-      }
-    }
-
     closeCallbacks.current = []
   }, [])
 
@@ -92,7 +76,7 @@ export function Outer({
   }, [setDialogIsOpen, control.id, callQueuedCallbacks])
 
   // This is the function that we call when we want to dismiss the dialog.
-  const close = React.useCallback<DialogControlProps['close']>(cb => {
+  const close = React.useCallback<DialogControlProps['close']>((cb:any) => {
     if (typeof cb === 'function') {
       closeCallbacks.current.push(cb)
     }
@@ -111,6 +95,7 @@ export function Outer({
 
   const onSnapPointChange = (e: BottomSheetSnapPointChangeEvent) => {
     const {snapPoint} = e.nativeEvent
+    
     setSnapPoint(snapPoint)
 
     if (
@@ -154,7 +139,6 @@ export function Outer({
       nativeSnapPoint: snapPoint,
       disableDrag,
       setDisableDrag,
-      isWithinDialog: true,
     }),
     [close, snapPoint, disableDrag, setDisableDrag],
   )
@@ -163,15 +147,13 @@ export function Outer({
     <BottomSheet
       ref={ref}
       cornerRadius={20}
-      backgroundColor={t.atoms.bg.backgroundColor}
+      backgroundColor={"white"}
       {...nativeOptions}
       onSnapPointChange={onSnapPointChange}
       onStateChange={onStateChange}
       disableDrag={disableDrag}>
       <Context.Provider value={context}>
-        <View testID={testID} style={[a.relative]}>
-          {children}
-        </View>
+        <View testID={testID}>{children}</View>
       </Context.Provider>
     </BottomSheet>
   )
@@ -183,9 +165,10 @@ export function Inner({children, style, header}: DialogInnerProps) {
     <>
       {header}
       <View
+      className={cn('pt-5 px-4') }
         style={[
-          a.pt_2xl,
-          a.px_xl,
+          // a.pt_2xl,
+          // a.px_xl,
           {
             paddingBottom: insets.bottom + insets.top,
           },
@@ -199,7 +182,7 @@ export function Inner({children, style, header}: DialogInnerProps) {
 
 export const ScrollableInner = React.forwardRef<ScrollView, DialogInnerProps>(
   function ScrollableInner(
-    {children, contentContainerStyle, header, ...props},
+    {children, style, contentContainerStyle, header, ...props},
     ref,
   ) {
     const {nativeSnapPoint, disableDrag, setDisableDrag} = useDialogContext()
@@ -219,21 +202,13 @@ export const ScrollableInner = React.forwardRef<ScrollView, DialogInnerProps>(
       [],
     )
 
-    let paddingBottom = 0
-    if (isIOS) {
-      paddingBottom += keyboardHeight / 4
-      if (nativeSnapPoint === BottomSheetSnapPoint.Full) {
-        paddingBottom += insets.bottom + tokens.space.md
-      }
-      paddingBottom = Math.max(paddingBottom, tokens.space._2xl)
-    } else {
-      paddingBottom += keyboardHeight
-      if (nativeSnapPoint === BottomSheetSnapPoint.Full) {
-        paddingBottom += insets.top
-      }
-      paddingBottom +=
-        Math.max(insets.bottom, tokens.space._5xl) + tokens.space._2xl
-    }
+    const basePading =
+      (isIOS ? 30 : 50) + (isIOS ? keyboardHeight / 4 : keyboardHeight)
+    const fullPaddingBase = insets.bottom + insets.top + basePading
+    const fullPadding = isIOS ? fullPaddingBase : fullPaddingBase + 50
+
+    const paddingBottom =
+      nativeSnapPoint === BottomSheetSnapPoint.Full ? fullPadding : basePading
 
     const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       if (!isAndroid) {
@@ -249,10 +224,13 @@ export const ScrollableInner = React.forwardRef<ScrollView, DialogInnerProps>(
 
     return (
       <KeyboardAwareScrollView
+        style={[style]}
+        
         contentContainerStyle={[
-          a.pt_2xl,
-          a.px_xl,
-          {paddingBottom},
+          
+          // a.pt_2xl,
+          // a.px_xl,
+          {paddingBottom, paddingTop: 20, paddingHorizontal: 15},
           contentContainerStyle,
         ]}
         ref={ref}
@@ -270,67 +248,66 @@ export const ScrollableInner = React.forwardRef<ScrollView, DialogInnerProps>(
   },
 )
 
-export const InnerFlatList = React.forwardRef<
-  ListMethods,
-  ListProps<any> & {
-    webInnerStyle?: StyleProp<ViewStyle>
-    webInnerContentContainerStyle?: StyleProp<ViewStyle>
-  }
->(function InnerFlatList({style, ...props}, ref) {
-  const insets = useSafeAreaInsets()
-  const {nativeSnapPoint, disableDrag, setDisableDrag} = useDialogContext()
+// export const InnerFlatList = React.forwardRef<
+//   ListMethods,
+//   ListProps<any> & {
+//     webInnerStyle?: StyleProp<ViewStyle>
+//     webInnerContentContainerStyle?: StyleProp<ViewStyle>
+//   }
+// >(function InnerFlatList({style, ...props}, ref) {
+//   const insets = useSafeAreaInsets()
+//   const {nativeSnapPoint, disableDrag, setDisableDrag} = useDialogContext()
 
-  const onScroll = (e: ReanimatedScrollEvent) => {
-    'worklet'
-    if (!isAndroid) {
-      return
-    }
-    const {contentOffset} = e
-    if (contentOffset.y > 0 && !disableDrag) {
-      runOnJS(setDisableDrag)(true)
-    } else if (contentOffset.y <= 1 && disableDrag) {
-      runOnJS(setDisableDrag)(false)
-    }
-  }
+//   const onScroll = (e: ReanimatedScrollEvent) => {
+//     'worklet'
+//     if (!isAndroid) {
+//       return
+//     }
+//     const {contentOffset} = e
+//     if (contentOffset.y > 0 && !disableDrag) {
+//       runOnJS(setDisableDrag)(true)
+//     } else if (contentOffset.y <= 1 && disableDrag) {
+//       runOnJS(setDisableDrag)(false)
+//     }
+//   }
 
-  return (
-    <ScrollProvider onScroll={onScroll}>
-      <List
-        keyboardShouldPersistTaps="handled"
-        bounces={nativeSnapPoint === BottomSheetSnapPoint.Full}
-        ListFooterComponent={
-          <View style={{height: insets.bottom + a.pt_5xl.paddingTop + 50}} />
-        }
-        ref={ref}
-        {...props}
-        style={[style]}
-      />
-    </ScrollProvider>
-  )
-})
+//   return (
+//     <ScrollProvider onScroll={onScroll}>
+//       <List
+//         keyboardShouldPersistTaps="handled"
+//         bounces={nativeSnapPoint === BottomSheetSnapPoint.Full}
+//         ListFooterComponent={
+//           <View style={{height: insets.bottom + 40}} />
+//         }
+//         ref={ref}
+//         {...props}
+//         style={[style]}
+//       />
+//     </ScrollProvider>
+//   )
+// })
 
 export function Handle() {
-  const t = useTheme()
+  // const t = useTheme()
   const {_} = useLingui()
-  const {screenReaderEnabled} = useA11y()
   const {close} = useDialogContext()
 
   return (
-    <View style={[a.absolute, a.w_full, a.align_center, a.z_10, {height: 20}]}>
+    <View style={[{height: 20}]} className='absolute w-full items-center z-10'>
       <Pressable
-        accessible={screenReaderEnabled}
         onPress={() => close()}
         accessibilityLabel={_(msg`Dismiss`)}
         accessibilityHint={_(msg`Double tap to close the dialog`)}>
         <View
           style={[
-            a.rounded_sm,
+            
             {
-              top: tokens.space._2xl / 2 - 2.5,
+              borderRadius: 10,
+              top: 10,
               width: 35,
               height: 5,
               alignSelf: 'center',
-              backgroundColor: t.palette.contrast_975,
+              backgroundColor: "red",
               opacity: 0.5,
             },
           ]}
